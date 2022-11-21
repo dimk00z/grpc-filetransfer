@@ -2,15 +2,15 @@ package service
 
 import (
 	"bytes"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 )
 
 type File struct {
-	FilePath string
-	buffer   *bytes.Buffer
+	FilePath   string
+	buffer     *bytes.Buffer
+	OutputFile *os.File
 }
 
 func NewFile() *File {
@@ -19,25 +19,25 @@ func NewFile() *File {
 	}
 }
 
-func (f *File) SetFilePath(fileName, path string) error {
+func (f *File) SetFile(fileName, path string) error {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
 	f.FilePath = filepath.Join(path, fileName)
+	file, err := os.Create(f.FilePath)
+	if err != nil {
+		return err
+	}
+	f.OutputFile = file
 	return nil
 }
 
 func (f *File) Write(chunk []byte) error {
-	_, err := f.buffer.Write(chunk)
-
+	_, err := f.OutputFile.Write(chunk)
 	return err
 }
 
-func (f *File) WriteFile() error {
-	if err := ioutil.WriteFile(f.FilePath, f.buffer.Bytes(), 0o644); err != nil {
-		return err
-	}
-
-	return nil
+func (f *File) Close() error {
+	return f.OutputFile.Close()
 }

@@ -13,15 +13,17 @@ import (
 )
 
 type ClientService struct {
-	addr     string
-	filePath string
-	client   uploadpb.FileServiceClient
+	addr      string
+	filePath  string
+	batchSize int
+	client    uploadpb.FileServiceClient
 }
 
-func New(addr string, filePath string) *ClientService {
+func New(addr string, filePath string, batchSize int) *ClientService {
 	return &ClientService{
-		addr:     addr,
-		filePath: filePath,
+		addr:      addr,
+		filePath:  filePath,
+		batchSize: batchSize,
 	}
 }
 
@@ -69,7 +71,8 @@ func (s *ClientService) upload(ctx context.Context, cancel context.CancelFunc) e
 	if err != nil {
 		return err
 	}
-	buf := make([]byte, 64*1024)
+	buf := make([]byte, s.batchSize)
+	batchNumber := 1
 	for {
 		num, err := file.Read(buf)
 		if err == io.EOF {
@@ -78,9 +81,14 @@ func (s *ClientService) upload(ctx context.Context, cancel context.CancelFunc) e
 		if err != nil {
 			return err
 		}
-		if err := stream.Send(&uploadpb.FileUploadRequest{FileName: s.filePath, Chunk: buf[:num]}); err != nil {
+		chunk := buf[:num]
+
+		if err := stream.Send(&uploadpb.FileUploadRequest{FileName: s.filePath, Chunk: chunk}); err != nil {
 			return err
 		}
+		log.Printf("Sent - batch #%v - size - %v\n", batchNumber, len(chunk))
+		batchNumber += 1
+
 	}
 	res, err := stream.CloseAndRecv()
 	if err != nil {

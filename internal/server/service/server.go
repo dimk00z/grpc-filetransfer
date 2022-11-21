@@ -32,7 +32,7 @@ func (g *FileServiceServer) Upload(stream uploadpb.FileService_UploadServer) err
 	for {
 		req, err := stream.Recv()
 		if file.FilePath == "" {
-			file.SetFilePath(req.GetFileName(), g.cfg.FilesStorage.Location)
+			file.SetFile(req.GetFileName(), g.cfg.FilesStorage.Location)
 		}
 		if err == io.EOF {
 			break
@@ -47,8 +47,9 @@ func (g *FileServiceServer) Upload(stream uploadpb.FileService_UploadServer) err
 			return g.logError(status.Error(codes.Internal, err.Error()))
 		}
 	}
-	if err := file.WriteFile(); err != nil {
-		return nil
+
+	if err := file.OutputFile.Close(); err != nil {
+		return err
 	}
 	fmt.Println(file.FilePath, fileSize)
 	fileName := filepath.Base(file.FilePath)

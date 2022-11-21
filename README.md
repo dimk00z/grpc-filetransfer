@@ -1,8 +1,31 @@
 # grpc-filetransfer
 
-http://www.inanzzz.com/index.php/post/152g/transferring-files-with-grpc-client-side-streams-using-golang
-https://www.reddit.com/r/golang/comments/v7rpz7/how_to_transfer_a_multipart_form_file_from_the/
-https://www.vinsguru.com/grpc-file-upload-client-streaming/
+## Server 
 
-https://dev.to/techschoolguru/upload-file-in-chunks-with-client-streaming-grpc-golang-4loc
-https://github.com/techschool/pcbook-go/tree/master
+```go run cmd/server/main.go```
+
+Настройки сервера в `./config/server/config.yml` или можно прокинуть через переменные окружения.
+
+## Client
+
+```
+go run cmd/client/main.go -h
+Sending files via gRPC
+
+Usage:
+  transfer_client [flags]
+
+Flags:
+  -a, --addr string   server address
+  -b, --batch int     file path (default 1048576)
+  -f, --file string   file path
+  -h, --help          help for transfer_client
+```
+### Пример запуска клиента 
+
+```go run cmd/client/main.go -a=':9000' -f=8GB.bin```
+
+
+## Testing
+
+Для оптимальной проверки тут нужны интеграционные тесты, при необходимости подумаю про это.

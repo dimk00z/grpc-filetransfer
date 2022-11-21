@@ -12,11 +12,12 @@ import (
 var (
 	serverAddr string
 	filePath   string
+	batchSize  int
 	rootCmd    = &cobra.Command{
 		Use:   "transfer_client",
 		Short: "Sending files via gRPC",
 		Run: func(cmd *cobra.Command, args []string) {
-			clientService := service.New(serverAddr, filePath)
+			clientService := service.New(serverAddr, filePath, batchSize)
 			if err := clientService.SendFile(); err != nil {
 				log.Fatal(err)
 			}
@@ -34,6 +35,7 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringVarP(&serverAddr, "addr", "a", "", "server address")
 	rootCmd.Flags().StringVarP(&filePath, "file", "f", "", "file path")
+	rootCmd.Flags().IntVarP(&batchSize, "batch", "b", 1024*1024, "file path")
 	if err := rootCmd.MarkFlagRequired("file"); err != nil {
 		log.Fatal(err)
 	}
