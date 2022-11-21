@@ -3,17 +3,10 @@ syntax = "proto3";
 package proto;
  
 option go_package = "./;uploadpb";
- 
-
-message FileInfo {
-    string file_name = 1;
-  }
 
 message FileUploadRequest {
-  oneof data {
-    FileInfo info = 1;
-    bytes chunk_data = 2;
-  };
+    string file_name = 1;
+    bytes chunk = 2;
 }
   
 message FileUploadResponse {

@@ -1,8 +1,9 @@
 package service
 
 import (
-	"bytes"
+	"fmt"
 	"io"
+	"path/filepath"
 
 	config "github.com/dimk00z/grpc-filetransfer/config/server"
 	"github.com/dimk00z/grpc-filetransfer/pkg/logger"
@@ -11,63 +12,46 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type GRPCServer struct {
+type FileServiceServer struct {
 	uploadpb.UnimplementedFileServiceServer
 	l   *logger.Logger
 	cfg *config.Config
 }
 
-func (g *GRPCServer) Upload(stream uploadpb.FileService_UploadServer) error {
-	req, err := stream.Recv()
-	if err != nil {
-		g.l.Debug(err)
-		return status.Errorf(codes.Unknown, "cannot receive image info")
+func New(l *logger.Logger, cfg *config.Config) *FileServiceServer {
+	return &FileServiceServer{
+		l:   l,
+		cfg: cfg,
 	}
-	fileName := req.GetInfo().GetFileName()
-	fileData := bytes.Buffer{}
-	fileSize := 0
+}
 
+func (g *FileServiceServer) Upload(stream uploadpb.FileService_UploadServer) error {
+	file := NewFile()
+	var fileSize uint32
+	fileSize = 0
 	for {
-		err := g.contextError(stream.Context())
-		if err != nil {
-			return err
-		}
-
-		g.l.Debug("waiting to receive more data")
-
 		req, err := stream.Recv()
+		if file.FilePath == "" {
+			file.SetFilePath(req.GetFileName(), g.cfg.FilesStorage.Location)
+		}
 		if err == io.EOF {
-			g.l.Debug("no more data")
 			break
 		}
 		if err != nil {
-			return g.logError(status.Errorf(codes.Unknown, "cannot receive chunk data: %v", err))
+			return g.logError(status.Error(codes.Internal, err.Error()))
 		}
-		chunk := req.GetChunkData()
-		size := len(chunk)
-
-		g.l.Debug("received a chunk with size: %d", size)
-
-		fileSize += size
-
-		if _, err = fileData.Write(chunk); err != nil {
-			return g.logError(status.Errorf(codes.Internal, "cannot write chunk data: %v", err))
+		chunk := req.GetChunk()
+		fileSize += uint32(len(chunk))
+		g.l.Debug("received a chunk with size: %d", fileSize)
+		if err := file.Write(chunk); err != nil {
+			return g.logError(status.Error(codes.Internal, err.Error()))
 		}
 	}
-
-	if err := g.FileSave(fileName, fileData); err != nil {
-		return g.logError(status.Errorf(codes.Internal, "cannot save image to the store: %v", err))
+	if err := file.WriteFile(); err != nil {
+		return nil
 	}
-
-	res := &uploadpb.FileUploadResponse{
-		FileName: fileName,
-		Size:     uint32(fileSize),
-	}
-
-	err = stream.SendAndClose(res)
-	if err != nil {
-		return g.logError(status.Errorf(codes.Unknown, "cannot send response: %v", err))
-	}
+	fmt.Println(file.FilePath, fileSize)
+	fileName := filepath.Base(file.FilePath)
 	g.l.Debug("saved file: %s, size: %d", fileName, fileSize)
-	return nil
+	return stream.SendAndClose(&uploadpb.FileUploadResponse{FileName: fileName, Size: fileSize})
 }
