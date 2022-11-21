@@ -1,0 +1,12 @@
+app:
+  name: 'grpc-filetransfer'
+  version: '1.0.0'
+
+grpc:
+  port: ":9000"
+
+files_storage:
+  location: "client_files"
+
+logger:
+  log_level: 'debug'
