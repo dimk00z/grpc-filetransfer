@@ -21,6 +21,9 @@ Flags:
   -f, --file string   file path
   -h, --help          help for transfer_client
 ```
+
+Скорость передачи/записи зависит от размера `batch`, нужно подбирать оптимальный 
+
 ### Пример запуска клиента 
 
 ```go run cmd/client/main.go -a=':9000' -f=8GB.bin```
