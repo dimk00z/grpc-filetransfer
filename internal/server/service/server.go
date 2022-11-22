@@ -29,6 +29,11 @@ func (g *FileServiceServer) Upload(stream uploadpb.FileService_UploadServer) err
 	file := NewFile()
 	var fileSize uint32
 	fileSize = 0
+	defer func() {
+		if err := file.OutputFile.Close(); err != nil {
+			g.l.Error(err)
+		}
+	}()
 	for {
 		req, err := stream.Recv()
 		if file.FilePath == "" {
@@ -48,9 +53,6 @@ func (g *FileServiceServer) Upload(stream uploadpb.FileService_UploadServer) err
 		}
 	}
 
-	if err := file.OutputFile.Close(); err != nil {
-		return err
-	}
 	fmt.Println(file.FilePath, fileSize)
 	fileName := filepath.Base(file.FilePath)
 	g.l.Debug("saved file: %s, size: %d", fileName, fileSize)

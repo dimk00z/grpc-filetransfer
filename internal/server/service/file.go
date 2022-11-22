@@ -34,6 +34,9 @@ func (f *File) SetFile(fileName, path string) error {
 }
 
 func (f *File) Write(chunk []byte) error {
+	if f.OutputFile == nil {
+		return nil
+	}
 	_, err := f.OutputFile.Write(chunk)
 	return err
 }
