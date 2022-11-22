@@ -35,7 +35,7 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringVarP(&serverAddr, "addr", "a", "", "server address")
 	rootCmd.Flags().StringVarP(&filePath, "file", "f", "", "file path")
-	rootCmd.Flags().IntVarP(&batchSize, "batch", "b", 1024*1024, "file path")
+	rootCmd.Flags().IntVarP(&batchSize, "batch", "b", 1024*1024, "batch size for sending")
 	if err := rootCmd.MarkFlagRequired("file"); err != nil {
 		log.Fatal(err)
 	}

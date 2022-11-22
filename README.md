@@ -17,7 +17,7 @@ Usage:
 
 Flags:
   -a, --addr string   server address
-  -b, --batch int     file path (default 1048576)
+  -b, --batch int     batch size for sending (default 1048576)
   -f, --file string   file path
   -h, --help          help for transfer_client
 ```
