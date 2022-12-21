@@ -4,7 +4,7 @@
 
 ```go run cmd/server/main.go```
 
-Настройки сервера в `./config/server/config.yml` или можно прокинуть через переменные окружения.
+Server config `./config/server/config.yml` or you can use envs.
 
 ## Client
 
@@ -22,13 +22,8 @@ Flags:
   -h, --help          help for transfer_client
 ```
 
-Скорость передачи/записи зависит от размера `batch`, нужно подбирать оптимальный 
+File transfer speed depends on `batch` size 
 
-### Пример запуска клиента 
+### Client run
 
 ```go run cmd/client/main.go -a=':9000' -f=8GB.bin```
-
-
-## Testing
-
-Для оптимальной проверки тут нужны интеграционные тесты, при необходимости подумаю про это.
