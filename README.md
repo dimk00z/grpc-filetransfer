@@ -1,5 +1,9 @@
 # grpc-filetransfer
 
+## Article
+
+https://dev.to/dimk00z/grpc-file-transfer-with-go-1nb2
+
 ## Server 
 
 ```go run cmd/server/main.go```
